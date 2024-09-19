@@ -2,23 +2,25 @@ from scipy.integrate import odeint
 import numpy as np
 import matplotlib.pyplot as plt
 
-def OrGate(y, t, TF1, k1, k2, Kd1, total_time):
-    if t > total_time / 2:
+def Direct(y, t, TF1, k1, k2, Kd1, total_time):
+    if t > total_time / 3:
         TF1 = 0
+    if t > total_time * 2/3:
+        TF1 = 1
     d_dt = np.zeros(1)
     d_dt[0] = k1*(1 - 1/(1+ (TF1/Kd1))) - k2*y[0]
     return d_dt
 
-def integrate_OrGate(y0, time_steps, params):
+def integrate_Direct(y0, time_steps, params):
     total_time = time_steps[-1]
     result = odeint(
-        lambda y, t: OrGate(y, t, params['TF1'], params['k1'], params['k2'], params['Kd1'], total_time),
+        lambda y, t: Direct(y, t, params['TF1'], params['k1'], params['k2'], params['Kd1'], total_time),
         y0, time_steps
     )
     return result
 
 def parameter_scan(param_change, args, y0, time_steps):
-    param_vals = np.logspace(-6, 3, 10)
+    param_vals = np.logspace(-2, 2, 5)
     num_vals = len(param_vals)
     args_array = [{} for _ in range(num_vals)]
     keys = list(args.keys())
@@ -35,7 +37,7 @@ def calc_plot_scan_results(name, arr, y0, time_steps, time):
     labels = []
     for params in arr:
         param_values = {param: params[param] for param in ['TF1', 'k1', 'k2', 'Kd1']}
-        result = integrate_OrGate(y0, time_steps, param_values)
+        result = integrate_Direct(y0, time_steps, param_values)
         results.append(result)
         label = f'{name}={params[name]}' if name in params else 'Unknown parameter'
         labels.append(label)
@@ -46,7 +48,7 @@ def calc_plot_scan_results(name, arr, y0, time_steps, time):
     plt.ylabel('[mRNA$_1$]')
     plt.legend(loc='best')
     plt.title(f'{name} Parameter Scan Results')
-    plt.savefig('DirectResults/Direct_' + str(name) + '_' + str(time) + '_scan_results.png')
+    plt.savefig('DirectResults/Direct_' + str(name) + '_' + str(time) + '_scan_results.pdf')
     
 def do_param_scans(params, y0, time_steps, time):
     for key in params.keys():

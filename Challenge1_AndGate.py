@@ -3,8 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def AndGate(y, t, TF1, k1, k2, k3, k4, k5, k6, Kd1, Kd2, Kd11, total_time):
-    if t > total_time / 2:
+    if t > total_time / 3:
         TF1 = 0
+    if t > total_time * 2/3:
+        TF1 = 1
     d_dt = np.zeros(3)
     d_dt[0] = (1 - (1 / (1 + (TF1 / Kd1)))) * (1 - (1 / (1 + (y[2] / Kd2)))) * k1 - k2 * y[0]
     d_dt[1] = (1 - (1 / (1 + (TF1 / Kd11)))) * k3 - k4 * y[1]
@@ -21,7 +23,7 @@ def integrate_AndGate(y0, time_steps, params):
     return result
 
 def parameter_scan(param_change, args, y0, time_steps):
-    param_vals = np.logspace(-6, 3, 10)
+    param_vals = np.logspace(-2, 2, 5)
     num_vals = len(param_vals)
     args_array = [{} for _ in range(num_vals)]
     keys = list(args.keys())
@@ -49,7 +51,7 @@ def calc_plot_scan_results(name, arr, y0, time_steps, time):
     plt.ylabel('[mRNA$_1$]')
     plt.legend(loc='best')
     plt.title(f'{name} Parameter Scan Results')
-    plt.savefig('AndGateResults/AndGate_' + str(name) + '_' + str(time) + '_scan_results.png')
+    plt.savefig('AndGateResults/AndGate_' + str(name) + '_' + str(time) + '_scan_results.pdf')
     
 def do_param_scans(params, y0, time_steps, time):
     for key in params.keys():
